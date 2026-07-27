@@ -1,0 +1,13 @@
+# API Keys (actual)
+config/api-keys.js
+
+# Supabase local temp files
+supabase/.temp/
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Node
+node_modules/

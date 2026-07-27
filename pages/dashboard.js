@@ -1,12 +1,11 @@
 // Dashboard Page
 const DashboardPage = {
     _channel: null,
+    _pollTimer: null,
+    _realtimeActive: false,
 
     async render(container) {
-        if (this._channel) {
-            supabase.removeChannel(this._channel);
-            this._channel = null;
-        }
+        this.cleanup();
         container.innerHTML = `
             <div class="max-w-7xl mx-auto space-y-6">
                 <div class="flex items-center justify-between">
@@ -123,9 +122,12 @@ const DashboardPage = {
     },
 
     subscribeRealtime() {
+        this._realtimeActive = false;
         this._channel = supabase
             .channel('dashboard-posts')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, (payload) => {
+                this._realtimeActive = true;
+                this._stopPolling();
                 const { eventType, new: newRow, old: oldRow } = payload;
 
                 if (eventType === 'INSERT' && newRow.status === 'approved') {
@@ -154,12 +156,51 @@ const DashboardPage = {
                 }
             })
             .subscribe();
+
+        // If no realtime event within 8s, fall back to polling
+        setTimeout(() => {
+            if (!this._realtimeActive && this._channel) {
+                console.log('Realtime not active, falling back to polling');
+                this._startPolling();
+            }
+        }, 8000);
+    },
+
+    _startPolling() {
+        this._stopPolling();
+        this._pollTimer = setInterval(async () => {
+            if (!document.getElementById('posts-grid')) {
+                this._stopPolling();
+                return;
+            }
+            try {
+                const { data } = await supabase
+                    .from('posts')
+                    .select('*')
+                    .eq('status', 'approved')
+                    .order('created_at', { ascending: false })
+                    .limit(20);
+                if (data) {
+                    this.allPosts = data.map(row => DB.normalizePost(row));
+                    this.renderGrid(this.allPosts);
+                }
+            } catch (e) { /* silent */ }
+        }, 30000);
+    },
+
+    _stopPolling() {
+        if (this._pollTimer) {
+            clearInterval(this._pollTimer);
+            this._pollTimer = null;
+        }
     },
 
     cleanup() {
+        this._stopPolling();
         if (this._channel) {
             supabase.removeChannel(this._channel);
             this._channel = null;
         }
+        this._realtimeActive = false;
     }
 };

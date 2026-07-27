@@ -269,6 +269,23 @@ const PostingBaruPage = {
         this.renderPhotoPreviews();
     },
 
+    async forceSubmit() {
+        Modal.close();
+        const data = PostingBaruPage._pendingData;
+        const photoURLs = PostingBaruPage._pendingPhotoURLs;
+        if (!data) return;
+        try {
+            await DB.createPost(data, { force: true });
+            Toast.show('Posting berhasil dikirim!', 'success');
+            Router.navigate('posting-saya');
+        } catch (err) {
+            console.error('Force submit error:', err);
+            Toast.show('Gagal mengirim posting: ' + err.message, 'error');
+        }
+        PostingBaruPage._pendingData = null;
+        PostingBaruPage._pendingPhotoURLs = null;
+    },
+
     async submitForm(event) {
         event.preventDefault();
         const form = event.target;
@@ -317,13 +334,15 @@ const PostingBaruPage = {
             const result = await DB.createPost(data);
 
             if (result.warning) {
+                PostingBaruPage._pendingData = data;
+                PostingBaruPage._pendingPhotoURLs = photoURLs;
                 Modal.show(`
                     <div class="text-center">
                         <svg class="w-16 h-16 mx-auto text-yellow-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
                         <h3 class="font-bold text-lg text-gray-900 dark:text-white mb-2">Peringatan Duplikasi</h3>
                         <p class="text-gray-500 text-sm mb-4">${escapeHtml(result.warning)}</p>
                         <p class="text-gray-400 text-xs mb-4">Posting tetap akan dikirim untuk moderasi.</p>
-                        <button onclick="Modal.close(); Toast.show('Posting berhasil dikirim!', 'success'); Router.navigate('posting-saya');" class="btn-primary">Kirim Tetap</button>
+                        <button onclick="PostingBaruPage.forceSubmit()" class="btn-primary">Kirim Tetap</button>
                     </div>`, { title: 'AI Deteksi Duplikasi' });
             } else {
                 Toast.show('Posting berhasil dikirim!', 'success');

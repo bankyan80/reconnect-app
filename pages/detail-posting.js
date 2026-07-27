@@ -20,8 +20,8 @@ const DetailPostingPage = {
             }
 
             const isFav = await DB.isFavorited(post.id);
-            const score = post.aiScore || Math.floor(Math.random() * 30) + 70;
-            const label = App.getScoreLabel(score);
+            const score = post.aiScore || null;
+            const label = score ? App.getScoreLabel(score) : null;
 
             container.innerHTML = `
             <div class="max-w-3xl mx-auto space-y-6">
@@ -64,7 +64,7 @@ const DetailPostingPage = {
                         </div>
 
                         <!-- AI Score -->
-                        ${score > 0 ? `
+                        ${score ? `
                         <div class="mt-4 p-4 bg-accent-50 dark:bg-accent-900/10 rounded-xl border border-accent-200 dark:border-accent-800/30">
                             <div class="flex items-center gap-3">
                                 <div class="relative w-14 h-14">

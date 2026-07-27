@@ -17,7 +17,7 @@ const BantuanPage = {
 
     renderFAQ(question, answer) {
         return `
-        <div class="card" x-data="{open: false}">
+        <div class="card">
             <button onclick="this.parentElement.classList.toggle('open')" class="w-full flex items-center justify-between p-5 text-left">
                 <span class="font-semibold text-gray-900 dark:text-white text-sm">${escapeHtml(question)}</span>
                 <svg class="w-5 h-5 text-gray-400 flex-shrink-0 ml-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>

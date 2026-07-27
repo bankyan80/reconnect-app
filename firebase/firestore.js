@@ -1,7 +1,7 @@
 // Supabase Database Operations
 const DB = {
     // ===== POSTS =====
-    async createPost(data) {
+    async createPost(data, { force = false } = {}) {
         const post = {
             author_id: FirebaseAuth.currentUser?.uid || null,
             author_name: data.reporterName || 'Anonymous',
@@ -43,9 +43,11 @@ const DB = {
             favorites: 0
         };
 
-        const isDuplicate = await AIEngine.checkDuplicate(post);
-        if (isDuplicate) {
-            return { warning: 'Mungkin Anda sedang membuat posting yang sama.', data: post };
+        if (!force) {
+            const isDuplicate = await AIEngine.checkDuplicate(post);
+            if (isDuplicate) {
+                return { warning: 'Mungkin Anda sedang membuat posting yang sama.', data: post };
+            }
         }
 
         const { data: result, error } = await supabase.from('posts').insert(post).select().single();

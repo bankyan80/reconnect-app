@@ -61,8 +61,8 @@ const AIRecommendationPage = {
             // Show latest posts with AI similarity analysis
             const recommendations = posts.slice(0, 9);
             container.innerHTML = recommendations.map(post => {
-                const score = Math.floor(Math.random() * 40) + 60;
-                const label = App.getScoreLabel(score);
+                const score = post.aiScore || null;
+                const label = score ? App.getScoreLabel(score) : { text: 'Data baru', class: 'badge-info' };
                 return `
                 <div onclick="Router.navigate('detail-posting', {id:'${post.id}'})" class="card hover:shadow-lg transition-all duration-300 cursor-pointer overflow-hidden">
                     <div class="h-32 bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center">
@@ -75,10 +75,7 @@ const AIRecommendationPage = {
                         <h3 class="font-bold text-gray-900 dark:text-white">${escapeHtml(post.fullName || 'Tidak diketahui')}</h3>
                         <p class="text-xs text-gray-400 mt-1 line-clamp-2">${escapeHtml(post.description || '')}</p>
                         <div class="flex items-center justify-between mt-3">
-                            <div class="flex items-center gap-1">
-                                ${App.renderStars(score)}
-                            </div>
-                            <span class="text-sm font-bold text-accent-500">${score}%</span>
+                            ${score ? `<div class="flex items-center gap-1">${App.renderStars(score)}</div><span class="text-sm font-bold text-accent-500">${score}%</span>` : '<span class="text-xs text-gray-400">Belum ada skor AI</span>'}
                         </div>
                         <span class="inline-block mt-2 text-xs ${label.class} font-medium">${escapeHtml(label.text)}</span>
                     </div>

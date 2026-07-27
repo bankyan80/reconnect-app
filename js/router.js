@@ -69,6 +69,12 @@ const Router = {
 
         const finalPage = this.pages[pageName];
         if (!finalPage) return;
+
+        const prevPage = this.pages[this.currentPage];
+        if (prevPage && typeof prevPage.cleanup === 'function' && prevPage !== finalPage) {
+            prevPage.cleanup();
+        }
+
         this.currentPage = pageName;
         const content = document.getElementById('page-content');
 

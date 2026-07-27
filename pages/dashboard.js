@@ -1,6 +1,12 @@
 // Dashboard Page
 const DashboardPage = {
+    _channel: null,
+
     async render(container) {
+        if (this._channel) {
+            supabase.removeChannel(this._channel);
+            this._channel = null;
+        }
         container.innerHTML = `
             <div class="max-w-7xl mx-auto space-y-6">
                 <div class="flex items-center justify-between">
@@ -62,6 +68,7 @@ const DashboardPage = {
 
             this.allPosts = (data || []).map(row => DB.normalizePost(row));
             this.renderGrid(this.allPosts);
+            this.subscribeRealtime();
         } catch (err) {
             console.error('Dashboard error:', err);
             grid.innerHTML = `
@@ -113,5 +120,46 @@ const DashboardPage = {
                 </div>
             </div>`;
         }).join('');
+    },
+
+    subscribeRealtime() {
+        this._channel = supabase
+            .channel('dashboard-posts')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, (payload) => {
+                const { eventType, new: newRow, old: oldRow } = payload;
+
+                if (eventType === 'INSERT' && newRow.status === 'approved') {
+                    const post = DB.normalizePost(newRow);
+                    this.allPosts.unshift(post);
+                    this.renderGrid(this.allPosts);
+                } else if (eventType === 'UPDATE') {
+                    const idx = this.allPosts.findIndex(p => p.id === newRow.id);
+                    if (idx !== -1) {
+                        if (newRow.status === 'approved') {
+                            this.allPosts[idx] = DB.normalizePost(newRow);
+                        } else {
+                            this.allPosts.splice(idx, 1);
+                        }
+                        this.renderGrid(this.allPosts);
+                    } else if (newRow.status === 'approved') {
+                        this.allPosts.unshift(DB.normalizePost(newRow));
+                        this.renderGrid(this.allPosts);
+                    }
+                } else if (eventType === 'DELETE') {
+                    const idx = this.allPosts.findIndex(p => p.id === oldRow.id);
+                    if (idx !== -1) {
+                        this.allPosts.splice(idx, 1);
+                        this.renderGrid(this.allPosts);
+                    }
+                }
+            })
+            .subscribe();
+    },
+
+    cleanup() {
+        if (this._channel) {
+            supabase.removeChannel(this._channel);
+            this._channel = null;
+        }
     }
 };

@@ -1,0 +1,16 @@
+HTTP/1.1 200 OK
+Accept-Ranges: bytes
+Access-Control-Allow-Origin: *
+Age: 206
+Cache-Control: public, max-age=0, must-revalidate
+Content-Disposition: inline
+Content-Length: 9379
+Content-Type: text/html; charset=utf-8
+Date: Mon, 27 Jul 2026 18:00:50 GMT
+Etag: "221f44e2914dea96c29232cf3601984f"
+Last-Modified: Mon, 27 Jul 2026 17:57:23 GMT
+Server: Vercel
+Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+X-Vercel-Cache: HIT
+X-Vercel-Id: sin1::5w9zk-1785175250024-c3e0fe642d92
+

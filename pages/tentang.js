@@ -8,11 +8,11 @@ const TentangPage = {
                     <div class="card-body space-y-4">
                         <div class="text-center py-6">
                             <div class="w-20 h-20 bg-accent-500 rounded-2xl flex items-center justify-center text-white font-bold text-3xl mx-auto shadow-lg">CK</div>
-                            <h2 class="text-xl font-bold text-gray-900 dark:text-white mt-4">Cari Keluarga & Sahabat AI</h2>
+                            <h2 class="text-xl font-bold text-gray-900 dark:text-white mt-4">RECONNECT</h2>
                             <p class="text-sm text-gray-500 dark:text-gray-400">Versi 3.0 Enterprise</p>
                         </div>
                         <div class="prose prose-sm max-w-none text-gray-600 dark:text-gray-300">
-                            <p><strong>Cari Keluarga & Sahabat AI</strong> adalah platform sosial berbasis kecerdasan buatan yang membantu masyarakat menemukan kembali anggota keluarga, teman sekolah, sahabat, rekan kerja, maupun kerabat yang telah lama terpisah.</p>
+                            <p><strong>RECONNECT</strong> adalah platform sosial berbasis kecerdasan buatan yang membantu masyarakat menemukan kembali anggota keluarga, teman sekolah, sahabat, rekan kerja, maupun kerabat yang telah lama terpisah.</p>
                             <p>Berbeda dengan aplikasi pencarian biasa, sistem ini memanfaatkan <strong>Artificial Intelligence (AI)</strong> untuk membantu menemukan kecocokan berdasarkan berbagai informasi yang dimasukkan pengguna, bukan hanya nama.</p>
                             <h3>Fitur Utama</h3>
                             <ul>

@@ -5,7 +5,7 @@ const DashboardPage = {
             <div class="max-w-7xl mx-auto space-y-6">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">Selamat datang di Cari Keluarga & Sahabat</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Selamat datang di RECONNECT</p>
                     </div>
                     <div class="flex gap-2">
                         <button onclick="Router.navigate('ai-search')" class="btn-accent btn-sm">

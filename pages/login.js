@@ -6,7 +6,7 @@ const LoginPage = {
                 <div class="text-center mb-8">
                     <div class="w-20 h-20 bg-accent-500 rounded-2xl flex items-center justify-center text-white font-bold text-3xl mx-auto shadow-lg mb-4">CK</div>
                     <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Masuk</h1>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Selamat datang di Cari Keluarga & Sahabat AI</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Selamat datang di RECONNECT</p>
                 </div>
 
                 <div class="card">

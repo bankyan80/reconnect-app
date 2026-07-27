@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Cari Keluarga & Sahabat AI - Platform sosial berbasis AI untuk menemukan kembali keluarga dan sahabat yang terpisah">
+    <meta name="theme-color" content="#1e3a5f">
+    <meta property="og:title" content="Cari Keluarga & Sahabat AI">
+    <meta property="og:description" content="Platform AI untuk menemukan kembali keluarga dan sahabat yang terpisah">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://connect-6f4d1.web.app">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Cari Keluarga & Sahabat AI">
+    <meta name="twitter:description" content="Platform AI untuk menemukan kembali keluarga dan sahabat yang terpisah">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Cari Keluarga">
+    <link rel="apple-touch-icon" href="assets/img/logo-192.png">
+    <title>Cari Keluarga & Sahabat AI</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="assets/img/logo.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        primary: { 50:'#e8f0fe', 100:'#c5d9f7', 200:'#9ebee8', 300:'#6fa0d9', 400:'#4a88cc', 500:'#1e3a5f', 600:'#1a3354', 700:'#152b47', 800:'#0f213a', 900:'#0a182d' },
+                        accent: { 50:'#fff8e1', 100:'#ffecb3', 200:'#ffe082', 300:'#ffd54f', 400:'#ffca28', 500:'#f5a623', 600:'#e89a1d', 700:'#d48a15', 800:'#b5720d', 900:'#8a5609' },
+                        success: '#22c55e', warning: '#f59e0b', danger: '#ef4444', info: '#3b82f6'
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 font-sans transition-colors duration-300">
+    <div id="app" class="flex h-screen overflow-hidden">
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- Topbar -->
+            <header class="bg-white dark:bg-gray-800 shadow-sm z-20 px-4 lg:px-6 h-16 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 bg-accent-500 rounded-lg flex items-center justify-center font-bold text-sm text-white">CK</div>
+                        <span class="font-semibold text-primary-500 dark:text-white text-sm">Cari Keluarga</span>
+                    </div>
+                    <div class="hidden lg:flex items-center bg-gray-100 dark:bg-gray-700 rounded-xl px-4 py-2 w-96">
+                        <svg class="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        <input type="text" id="global-search" placeholder="Cari orang, postingan..." class="bg-transparent outline-none text-sm w-full dark:text-white dark:placeholder-gray-400">
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button id="dark-toggle" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition" title="Dark Mode">
+                        <svg class="w-5 h-5 text-gray-500 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+                    </button>
+                    <button id="notif-btn" class="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition" title="Notifikasi">
+                        <svg class="w-5 h-5 text-gray-500 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                        <span id="notif-badge" class="hidden absolute -top-1 -right-1 w-5 h-5 bg-danger text-white text-xs rounded-full flex items-center justify-center font-bold">0</span>
+                    </button>
+                    <div id="user-menu-container" class="relative"></div>
+                    <button id="menu-toggle" class="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <main id="page-content" class="flex-1 overflow-y-auto p-4 lg:p-6"></main>
+        </div>
+
+        <!-- Sidebar (Desktop - Right) -->
+        <aside id="sidebar" class="hidden lg:flex flex-col w-64 bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl text-gray-900 dark:text-white shadow-xl z-30 transition-all duration-300 border-l border-gray-200/50 dark:border-gray-700/50">
+            <div class="p-5 border-b border-gray-200/30 dark:border-gray-700/30">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-accent-500 rounded-xl flex items-center justify-center font-bold text-lg shadow-lg text-white">CK</div>
+                    <div>
+                        <h1 class="font-bold text-sm leading-tight text-primary-500 dark:text-white">Cari Keluarga</h1>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">& Sahabat</p>
+                    </div>
+                </div>
+            </div>
+            <nav class="flex-1 overflow-y-auto py-4 px-3" id="sidebar-nav"></nav>
+            <div class="p-4 border-t border-gray-200/30 dark:border-gray-700/30" id="sidebar-user"></div>
+        </aside>
+
+        <!-- Mobile Bottom Navigation -->
+        <nav id="bottom-nav" class="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-30 px-2 pb-safe"></nav>
+
+        <!-- Mobile Sidebar Overlay -->
+        <div id="sidebar-overlay" class="hidden fixed inset-0 bg-black/50 z-20 lg:hidden" onclick="toggleSidebar()"></div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed top-20 right-4 z-50 flex flex-col gap-2"></div>
+
+    <!-- Modal Container -->
+    <div id="modal-container" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"></div>
+
+    <!-- Scripts -->
+    <script src="supabase/config.js"></script>
+    <script src="firebase/config.js"></script>
+    <script src="firebase/auth.js"></script>
+    <script src="firebase/firestore.js"></script>
+    <script src="firebase/storage.js"></script>
+    <script src="ai/gemini.js"></script>
+    <script src="ai/search.js"></script>
+    <script src="ai/crawler.js"></script>
+    <script src="components/toast.js"></script>
+    <script src="components/modal.js"></script>
+    <script src="components/sidebar.js"></script>
+    <script src="components/bottomnav.js"></script>
+    <script src="components/topbar.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/router.js"></script>
+    <script src="pages/dashboard.js"></script>
+    <script src="pages/cari-orang.js"></script>
+    <script src="pages/posting-baru.js"></script>
+    <script src="pages/ai-search.js"></script>
+    <script src="pages/ai-recommendation.js"></script>
+    <script src="pages/posting-saya.js"></script>
+    <script src="pages/favorit.js"></script>
+    <script src="pages/notifikasi.js"></script>
+    <script src="pages/riwayat.js"></script>
+    <script src="pages/detail-posting.js"></script>
+    <script src="pages/tentang.js"></script>
+    <script src="pages/bantuan.js"></script>
+    <script src="pages/kontak.js"></script>
+    <script src="pages/moderasi.js"></script>
+    <script src="pages/admin.js"></script>
+    <script src="pages/login.js"></script>
+    <script src="js/init.js"></script>
+</body>
+</html>

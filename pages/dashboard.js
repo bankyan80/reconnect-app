@@ -114,16 +114,16 @@ const DashboardPage = {
                         </div>
                         <span class="text-xs text-gray-400">${App.timeAgo(post.createdAt)}</span>
                     </div>
-                    <div class="flex items-center gap-4 mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
-                        <button onclick="event.stopPropagation(); DashboardPage.toggleLike('${postId}', this)" class="flex items-center gap-1 text-xs text-gray-400 hover:text-red-500 transition like-btn" data-liked="false">
+                    <div class="flex items-center gap-2 mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+                        <button onclick="event.stopPropagation(); DashboardPage.toggleLike('${postId}', this)" class="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 hover:bg-primary-100 dark:hover:bg-primary-900/30 transition like-btn" data-liked="false">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
                             <span class="like-count">${post.likesCount || 0}</span>
                         </button>
-                        <button onclick="event.stopPropagation(); Router.navigate('detail-posting', {id:'${postId}'})" class="flex items-center gap-1 text-xs text-gray-400 hover:text-blue-500 transition">
+                        <button onclick="event.stopPropagation(); Router.navigate('detail-posting', {id:'${postId}'})" class="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 hover:bg-primary-100 dark:hover:bg-primary-900/30 transition">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
                             <span>${post.commentsCount || 0}</span>
                         </button>
-                        <button onclick="event.stopPropagation(); DashboardPage.sharePost('${postId}', '${escapeHtml(post.fullName || '')}')" class="flex items-center gap-1 text-xs text-gray-400 hover:text-green-500 transition">
+                        <button onclick="event.stopPropagation(); DashboardPage.sharePost('${postId}', '${escapeHtml(post.fullName || '')}')" class="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 hover:bg-primary-100 dark:hover:bg-primary-900/30 transition">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
                             <span>Share</span>
                         </button>
@@ -140,8 +140,7 @@ const DashboardPage = {
         const countEl = btn.querySelector('.like-count');
         btn.dataset.liked = result.liked;
         svg.setAttribute('fill', result.liked ? 'currentColor' : 'none');
-        svg.classList.toggle('text-red-500', result.liked);
-        svg.classList.toggle('text-gray-400', !result.liked);
+        btn.className = `flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition like-btn ${result.liked ? 'bg-red-50 dark:bg-red-900/20 text-red-500' : 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 hover:bg-primary-100 dark:hover:bg-primary-900/30'}`;
         if (countEl) countEl.textContent = result.count;
     },
 

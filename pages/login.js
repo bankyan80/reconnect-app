@@ -4,7 +4,9 @@ const LoginPage = {
         container.innerHTML = `
             <div class="max-w-md mx-auto py-12">
                 <div class="text-center mb-8">
-                    <div class="w-20 h-20 bg-accent-500 rounded-2xl flex items-center justify-center text-white font-bold text-3xl mx-auto shadow-lg mb-4">CK</div>
+                    <div class="w-20 h-20 bg-primary-500 rounded-2xl flex items-center justify-center mx-auto shadow-lg mb-4 overflow-hidden ring-2 ring-primary-300 dark:ring-primary-700">
+                        <img src="public/reconnect_icon_no_text_curved.png" alt="RECONNECT" class="w-14 h-14 object-contain">
+                    </div>
                     <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Masuk</h1>
                     <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Selamat datang di RECONNECT</p>
                 </div>

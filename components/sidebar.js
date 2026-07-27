@@ -58,8 +58,8 @@ const Sidebar = {
         const initial = (profile?.displayName || user.displayName || 'U')[0].toUpperCase();
         container.innerHTML = `
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-accent-500 flex items-center justify-center text-white font-bold text-sm overflow-hidden flex-shrink-0">
-                    ${user.photoURL ? `<img src="${escapeHtml(user.photoURL)}" alt="" class="w-full h-full object-cover">` : escapeHtml(initial)}
+                <div class="w-10 h-10 rounded-full bg-primary-500 flex items-center justify-center overflow-hidden ring-2 ring-primary-300 dark:ring-primary-700 flex-shrink-0">
+                    <img src="public/reconnect_icon_no_text_curved.png" alt="RN" class="w-7 h-7 object-contain">
                 </div>
                 <div class="flex-1 min-w-0">
                     <p class="text-sm font-semibold text-gray-700 dark:text-gray-200 truncate">${escapeHtml(profile?.displayName || user.displayName || 'User')}</p>

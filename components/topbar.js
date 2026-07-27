@@ -18,8 +18,8 @@ const Topbar = {
         container.innerHTML = `
             <div class="relative">
                 <button onclick="Topbar.toggleMenu()" class="flex items-center gap-2 p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition">
-                    <div class="w-8 h-8 rounded-full bg-accent-500 flex items-center justify-center text-white text-sm font-bold overflow-hidden">
-                        ${user.photoURL ? `<img src="${escapeHtml(user.photoURL)}" alt="" class="w-full h-full object-cover">` : escapeHtml(initial)}
+                    <div class="w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center overflow-hidden ring-2 ring-primary-300 dark:ring-primary-700">
+                        <img src="public/reconnect_icon_no_text_curved.png" alt="RN" class="w-6 h-6 object-contain">
                     </div>
                     <svg class="w-4 h-4 text-gray-400 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>

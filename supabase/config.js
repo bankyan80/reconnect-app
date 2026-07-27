@@ -5,6 +5,4 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 if (typeof window.supabase === 'undefined') {
     console.error('Supabase CDN script not loaded');
 }
-if (typeof supabase === 'undefined') {
-    var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-}
+var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);

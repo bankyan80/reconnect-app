@@ -7,7 +7,7 @@ const TentangPage = {
                 <div class="card">
                     <div class="card-body space-y-4">
                         <div class="text-center py-6">
-                            <div class="w-20 h-20 bg-accent-500 rounded-2xl flex items-center justify-center text-white font-bold text-3xl mx-auto shadow-lg">CK</div>
+                            <div class="w-20 h-20 bg-accent-500 rounded-2xl flex items-center justify-center text-white font-bold text-3xl mx-auto shadow-lg">RN</div>
                             <h2 class="text-xl font-bold text-gray-900 dark:text-white mt-4">RECONNECT</h2>
                             <p class="text-sm text-gray-500 dark:text-gray-400">Versi 3.0 Enterprise</p>
                         </div>

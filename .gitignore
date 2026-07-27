@@ -9,6 +9,10 @@ supabase/.temp/
 Thumbs.db
 Desktop.ini
 
+# Temp debug files
+headers.txt
+vh.txt
+
 # Node
 node_modules/
 

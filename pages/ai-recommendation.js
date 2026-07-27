@@ -64,20 +64,28 @@ const AIRecommendationPage = {
                 const score = post.aiScore || null;
                 const label = score ? App.getScoreLabel(score) : { text: 'Data baru', class: 'badge-info' };
                 return `
-                <div onclick="Router.navigate('detail-posting', {id:'${post.id}'})" class="card hover:shadow-lg transition-all duration-300 cursor-pointer overflow-hidden">
-                    <div class="h-32 bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center">
-                        ${post.photoURL
-                            ? `<img src="${escapeHtml(post.photoURL)}" alt="" class="w-full h-full object-cover">`
-                            : `<span class="text-4xl font-bold text-white/80">${escapeHtml((post.fullName || '?')[0]).toUpperCase()}</span>`
-                        }
-                    </div>
+                <div class="card hover:shadow-lg transition-all duration-300 overflow-hidden">
+                    ${post.photoURL ? `
+                    <div onclick="Router.navigate('detail-posting', {id:'${post.id}'})" class="h-32 bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center cursor-pointer">
+                        <img src="${escapeHtml(post.photoURL)}" alt="" class="w-full h-full object-cover">
+                    </div>` : ''}
                     <div class="p-4">
-                        <h3 class="font-bold text-gray-900 dark:text-white">${escapeHtml(post.fullName || 'Tidak diketahui')}</h3>
+                        <h3 onclick="Router.navigate('detail-posting', {id:'${post.id}'})" class="font-bold text-gray-900 dark:text-white cursor-pointer hover:text-primary-500 transition">${escapeHtml(post.fullName || 'Tidak diketahui')}</h3>
                         <p class="text-xs text-gray-400 mt-1 line-clamp-2">${escapeHtml(post.description || '')}</p>
                         <div class="flex items-center justify-between mt-3">
                             ${score ? `<div class="flex items-center gap-1">${App.renderStars(score)}</div><span class="text-sm font-bold text-accent-500">${score}%</span>` : '<span class="text-xs text-gray-400">Belum ada skor AI</span>'}
                         </div>
                         <span class="inline-block mt-2 text-xs ${label.class} font-medium">${escapeHtml(label.text)}</span>
+                        <div class="flex items-center gap-4 mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+                            <span class="flex items-center gap-1 text-xs text-gray-400">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                                ${post.likesCount || 0}
+                            </span>
+                            <span class="flex items-center gap-1 text-xs text-gray-400">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                                ${post.commentsCount || 0}
+                            </span>
+                        </div>
                     </div>
                 </div>`;
             }).join('');

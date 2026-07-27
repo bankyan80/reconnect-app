@@ -1,5 +1,7 @@
 // Detail Posting Page
 const DetailPostingPage = {
+    _currentPost: null,
+
     async render(container, params = {}) {
         if (!params.id) {
             container.innerHTML = '<p class="text-center text-gray-400 py-12">Posting tidak ditemukan</p>';
@@ -18,8 +20,10 @@ const DetailPostingPage = {
                 container.innerHTML = '<p class="text-center text-gray-400 py-12">Posting tidak ditemukan</p>';
                 return;
             }
+            this._currentPost = post;
 
             const isFav = await DB.isFavorited(post.id);
+            const isLiked = await DB.isLiked(post.id);
             const score = post.aiScore || null;
             const label = score ? App.getScoreLabel(score) : null;
 
@@ -33,17 +37,12 @@ const DetailPostingPage = {
                 </div>
 
                 <!-- Photo Section -->
+                ${post.photoURL ? `
                 <div class="card overflow-hidden">
                     <div class="h-64 bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center">
-                        ${post.photoURL
-                            ? `<img src="${escapeHtml(post.photoURL)}" alt="" class="w-full h-full object-cover">`
-                            : `<div class="text-center text-white">
-                                <svg class="w-20 h-20 mx-auto text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                                <p class="text-xl font-bold mt-2">${escapeHtml(post.fullName || '?')}</p>
-                               </div>`
-                        }
+                        <img src="${escapeHtml(post.photoURL)}" alt="" class="w-full h-full object-cover">
                     </div>
-                </div>
+                </div>` : ''}
 
                 <!-- Main Info -->
                 <div class="card">
@@ -91,6 +90,22 @@ const DetailPostingPage = {
                             ${post.relation ? `<span class="badge badge-warning">${escapeHtml(post.relation)}</span>` : ''}
                             ${post.estimatedAge ? `<span class="badge badge-info">${escapeHtml(String(post.estimatedAge))} tahun</span>` : ''}
                             ${post.status ? `<span class="badge ${post.status === 'found' ? 'badge-success' : post.status === 'closed' ? 'badge-danger' : 'badge-warning'}">${escapeHtml(post.status === 'searching' ? 'Mencari' : post.status === 'found' ? 'Ditemukan' : 'Ditutup')}</span>` : ''}
+                        </div>
+
+                        <!-- Like / Comment / Share Bar -->
+                        <div class="flex items-center gap-6 mt-6 pt-4 border-t border-gray-100 dark:border-gray-700">
+                            <button onclick="DetailPostingPage.toggleLike('${post.id}')" id="like-btn" class="flex items-center gap-2 text-sm font-medium ${isLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-500'} transition">
+                                <svg id="like-icon" class="w-5 h-5" fill="${isLiked ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                                <span id="like-count">${post.likesCount || 0}</span> Suka
+                            </button>
+                            <button onclick="document.getElementById('comment-input').focus()" class="flex items-center gap-2 text-sm font-medium text-gray-400 hover:text-blue-500 transition">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                                <span id="comment-count">${post.commentsCount || 0}</span> Komentar
+                            </button>
+                            <button onclick="DetailPostingPage.sharePost('${post.id}', '${escapeHtml(post.fullName || '')}')" class="flex items-center gap-2 text-sm font-medium text-gray-400 hover:text-green-500 transition">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+                                Share
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -142,11 +157,33 @@ const DetailPostingPage = {
                     </div>
                 </div>
 
+                <!-- Comments Section -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                            Komentar
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div id="comments-list" class="space-y-3 mb-4">
+                            <div class="text-center py-4"><div class="inline-block w-5 h-5 border-2 border-primary-400 border-t-transparent rounded-full animate-spin"></div></div>
+                        </div>
+                        ${FirebaseAuth.isLoggedIn() ? `
+                        <div class="flex gap-2">
+                            <input type="text" id="comment-input" class="form-input flex-1" placeholder="Tulis komentar..." onkeydown="if(event.key==='Enter')DetailPostingPage.submitComment('${post.id}')">
+                            <button onclick="DetailPostingPage.submitComment('${post.id}')" class="btn-primary btn-sm">Kirim</button>
+                        </div>` : '<p class="text-xs text-gray-400 text-center">Login untuk berkomentar</p>'}
+                    </div>
+                </div>
+
                 <!-- Meta -->
                 <div class="text-center text-xs text-gray-400">
                     Diposting ${App.formatDateTime(post.createdAt)} | Dilihat ${post.views || 0} kali
                 </div>
             </div>`;
+
+            this.loadComments(post.id);
         } catch (err) {
             console.error('Detail error:', err);
             container.innerHTML = '<p class="text-center text-red-400 py-12">Gagal memuat detail</p>';
@@ -170,6 +207,81 @@ const DetailPostingPage = {
             btn.querySelector('svg').setAttribute('fill', isFav ? 'currentColor' : 'none');
         }
         Toast.show(isFav ? 'Ditambahkan ke favorit' : 'Dihapus dari favorit', isFav ? 'success' : 'info');
+    },
+
+    async toggleLike(postId) {
+        if (!FirebaseAuth.isLoggedIn()) { Toast.show('Login terlebih dahulu', 'warning'); return; }
+        const result = await DB.toggleLike(postId);
+        const btn = document.getElementById('like-btn');
+        const icon = document.getElementById('like-icon');
+        const countEl = document.getElementById('like-count');
+        if (btn) btn.className = `flex items-center gap-2 text-sm font-medium ${result.liked ? 'text-red-500' : 'text-gray-400 hover:text-red-500'} transition`;
+        if (icon) icon.setAttribute('fill', result.liked ? 'currentColor' : 'none');
+        if (countEl) countEl.textContent = result.count;
+    },
+
+    sharePost(postId, name) {
+        const url = window.location.origin + window.location.pathname + '#detail-posting/' + postId;
+        if (navigator.share) {
+            navigator.share({ title: `RECONNECT - ${name}`, text: `Cari ${name} di RECONNECT`, url });
+        } else if (navigator.clipboard) {
+            navigator.clipboard.writeText(url);
+            Toast.show('Link disalin ke clipboard', 'success');
+        }
+    },
+
+    async loadComments(postId) {
+        const list = document.getElementById('comments-list');
+        if (!list) return;
+        const comments = await DB.getComments(postId);
+        if (comments.length === 0) {
+            list.innerHTML = '<p class="text-xs text-gray-400 text-center py-3">Belum ada komentar</p>';
+            return;
+        }
+        list.innerHTML = comments.map(c => `
+            <div class="flex gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl">
+                <div class="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0">
+                    <span class="text-xs font-bold text-primary-600 dark:text-primary-400">${escapeHtml((c.userName || 'A')[0]).toUpperCase()}</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-xs font-semibold text-gray-900 dark:text-white">${escapeHtml(c.userName)}</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 mt-0.5">${escapeHtml(c.content)}</p>
+                    <p class="text-[10px] text-gray-400 mt-1">${App.timeAgo(c.createdAt)}</p>
+                </div>
+            </div>
+        `).join('');
+    },
+
+    async submitComment(postId) {
+        const input = document.getElementById('comment-input');
+        if (!input) return;
+        const content = input.value.trim();
+        if (!content) return;
+        input.value = '';
+        try {
+            const comment = await DB.addComment(postId, content);
+            const list = document.getElementById('comments-list');
+            const emptyMsg = list?.querySelector('p.text-xs.text-gray-400');
+            if (emptyMsg) emptyMsg.remove();
+            if (list) {
+                list.insertAdjacentHTML('beforeend', `
+                    <div class="flex gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl">
+                        <div class="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0">
+                            <span class="text-xs font-bold text-primary-600 dark:text-primary-400">${escapeHtml((comment.userName || 'A')[0]).toUpperCase()}</span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-xs font-semibold text-gray-900 dark:text-white">${escapeHtml(comment.userName)}</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-300 mt-0.5">${escapeHtml(comment.content)}</p>
+                            <p class="text-[10px] text-gray-400 mt-1">Baru saja</p>
+                        </div>
+                    </div>`);
+            }
+            const countEl = document.getElementById('comment-count');
+            if (countEl) countEl.textContent = parseInt(countEl.textContent || '0') + 1;
+        } catch (err) {
+            Toast.show('Gagal mengirim komentar', 'error');
+            input.value = content;
+        }
     },
 
     reportPost(postId) {

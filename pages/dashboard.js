@@ -98,17 +98,15 @@ const DashboardPage = {
         container.innerHTML = posts.map(post => {
             const postId = escapeHtml(post.id);
             return `
-            <div onclick="Router.navigate('detail-posting', {id:'${postId}'})" class="card hover:shadow-lg transition-all duration-300 cursor-pointer overflow-hidden">
-                <div class="h-36 bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center">
-                    ${post.photoURL
-                        ? `<img src="${escapeHtml(post.photoURL)}" alt="" class="w-full h-full object-cover">`
-                        : `<span class="text-4xl font-bold text-white/80">${escapeHtml((post.fullName || '?')[0]).toUpperCase()}</span>`
-                    }
-                </div>
+            <div class="card hover:shadow-lg transition-all duration-300 overflow-hidden">
+                ${post.photoURL ? `
+                <div onclick="Router.navigate('detail-posting', {id:'${postId}'})" class="h-36 bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center cursor-pointer">
+                    <img src="${escapeHtml(post.photoURL)}" alt="" class="w-full h-full object-cover">
+                </div>` : ''}
                 <div class="p-4">
-                    <h3 class="font-bold text-gray-900 dark:text-white text-sm">${escapeHtml(post.fullName || 'Tidak diketahui')}</h3>
+                    <h3 onclick="Router.navigate('detail-posting', {id:'${postId}'})" class="font-bold text-gray-900 dark:text-white text-sm cursor-pointer hover:text-primary-500 transition">${escapeHtml(post.fullName || 'Tidak diketahui')}</h3>
                     ${post.relation ? `<p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Hubungan: ${escapeHtml(post.relation)}</p>` : ''}
-                    <p class="text-xs text-gray-400 dark:text-gray-500 mt-2 line-clamp-2">${escapeHtml(post.description || '')}</p>
+                    <p onclick="Router.navigate('detail-posting', {id:'${postId}'})" class="text-xs text-gray-400 dark:text-gray-500 mt-2 line-clamp-2 cursor-pointer">${escapeHtml(post.description || '')}</p>
                     <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
                         <div class="flex items-center gap-2">
                             ${post.city ? `<span class="text-xs text-primary-500 flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>${escapeHtml(post.city)}</span>` : ''}
@@ -116,9 +114,45 @@ const DashboardPage = {
                         </div>
                         <span class="text-xs text-gray-400">${App.timeAgo(post.createdAt)}</span>
                     </div>
+                    <div class="flex items-center gap-4 mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+                        <button onclick="event.stopPropagation(); DashboardPage.toggleLike('${postId}', this)" class="flex items-center gap-1 text-xs text-gray-400 hover:text-red-500 transition like-btn" data-liked="false">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                            <span class="like-count">${post.likesCount || 0}</span>
+                        </button>
+                        <button onclick="event.stopPropagation(); Router.navigate('detail-posting', {id:'${postId}'})" class="flex items-center gap-1 text-xs text-gray-400 hover:text-blue-500 transition">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                            <span>${post.commentsCount || 0}</span>
+                        </button>
+                        <button onclick="event.stopPropagation(); DashboardPage.sharePost('${postId}', '${escapeHtml(post.fullName || '')}')" class="flex items-center gap-1 text-xs text-gray-400 hover:text-green-500 transition">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+                            <span>Share</span>
+                        </button>
+                    </div>
                 </div>
             </div>`;
         }).join('');
+    },
+
+    async toggleLike(postId, btn) {
+        if (!FirebaseAuth.isLoggedIn()) { Toast.show('Login terlebih dahulu', 'warning'); return; }
+        const result = await DB.toggleLike(postId);
+        const svg = btn.querySelector('svg');
+        const countEl = btn.querySelector('.like-count');
+        btn.dataset.liked = result.liked;
+        svg.setAttribute('fill', result.liked ? 'currentColor' : 'none');
+        svg.classList.toggle('text-red-500', result.liked);
+        svg.classList.toggle('text-gray-400', !result.liked);
+        if (countEl) countEl.textContent = result.count;
+    },
+
+    sharePost(postId, name) {
+        const url = window.location.origin + window.location.pathname + '#detail-posting/' + postId;
+        if (navigator.share) {
+            navigator.share({ title: `RECONNECT - ${name}`, text: `Cari ${name} di RECONNECT`, url });
+        } else if (navigator.clipboard) {
+            navigator.clipboard.writeText(url);
+            Toast.show('Link disalin ke clipboard', 'success');
+        }
     },
 
     subscribeRealtime() {

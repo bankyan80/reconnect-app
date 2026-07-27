@@ -189,6 +189,97 @@ const DB = {
         return posts.filter(Boolean);
     },
 
+    // ===== LIKES =====
+    async toggleLike(postId) {
+        const uid = FirebaseAuth.currentUser?.uid;
+        if (!uid) { Toast.show('Login terlebih dahulu', 'warning'); return { liked: false, count: 0 }; }
+
+        const { data: existing } = await supabase
+            .from('likes')
+            .select('id')
+            .eq('post_id', postId)
+            .eq('user_id', uid)
+            .maybeSingle();
+
+        if (existing) {
+            await supabase.from('likes').delete().eq('id', existing.id);
+            await supabase.rpc('decrement_likes', { pid: postId }).catch(() => {
+                supabase.from('posts').select('likes_count').eq('id', postId).maybeSingle().then(({ data }) => {
+                    if (data) supabase.from('posts').update({ likes_count: Math.max(0, (data.likes_count || 1) - 1) }).eq('id', postId);
+                });
+            });
+            const { data: p } = await supabase.from('posts').select('likes_count').eq('id', postId).maybeSingle();
+            return { liked: false, count: p?.likes_count || 0 };
+        } else {
+            await supabase.from('likes').insert({ post_id: postId, user_id: uid, created_at: new Date().toISOString() });
+            await supabase.rpc('increment_likes', { pid: postId }).catch(() => {
+                supabase.from('posts').select('likes_count').eq('id', postId).maybeSingle().then(({ data }) => {
+                    if (data) supabase.from('posts').update({ likes_count: (data.likes_count || 0) + 1 }).eq('id', postId);
+                });
+            });
+            const { data: p } = await supabase.from('posts').select('likes_count').eq('id', postId).maybeSingle();
+            return { liked: true, count: (p?.likes_count || 0) + 1 };
+        }
+    },
+
+    async isLiked(postId) {
+        const uid = FirebaseAuth.currentUser?.uid;
+        if (!uid) return false;
+        const { data } = await supabase.from('likes').select('id').eq('post_id', postId).eq('user_id', uid).maybeSingle();
+        return !!data;
+    },
+
+    async getLikeCount(postId) {
+        const { count } = await supabase.from('likes').select('*', { count: 'exact', head: true }).eq('post_id', postId);
+        return count || 0;
+    },
+
+    // ===== COMMENTS =====
+    async addComment(postId, content) {
+        const uid = FirebaseAuth.currentUser?.uid || null;
+        const userName = FirebaseAuth.userProfile?.displayName || 'Anonim';
+        const { data, error } = await supabase.from('comments').insert({
+            post_id: postId, user_id: uid, user_name: userName,
+            content, created_at: new Date().toISOString()
+        }).select().single();
+        if (error) throw error;
+
+        const { data: p } = await supabase.from('posts').select('comments_count').eq('id', postId).maybeSingle();
+        await supabase.from('posts').update({ comments_count: (p?.comments_count || 0) + 1 }).eq('id', postId);
+
+        return {
+            id: data.id,
+            postId: data.post_id,
+            userId: data.user_id,
+            userName: data.user_name,
+            content: data.content,
+            createdAt: data.created_at
+        };
+    },
+
+    async getComments(postId, limit = 50) {
+        const { data, error } = await supabase
+            .from('comments')
+            .select('*')
+            .eq('post_id', postId)
+            .order('created_at', { ascending: true })
+            .limit(limit);
+        if (error) return [];
+        return (data || []).map(c => ({
+            id: c.id,
+            postId: c.post_id,
+            userId: c.user_id,
+            userName: c.user_name,
+            content: c.content,
+            createdAt: c.created_at
+        }));
+    },
+
+    async getCommentCount(postId) {
+        const { count } = await supabase.from('comments').select('*', { count: 'exact', head: true }).eq('post_id', postId);
+        return count || 0;
+    },
+
     // ===== NOTIFICATIONS =====
     async createNotification(userId, data) {
         const { error } = await supabase.from('notifications').insert({
@@ -359,6 +450,8 @@ const DB = {
             aiAnalysis: row.ai_analysis,
             views: row.views,
             favorites: row.favorites,
+            likesCount: row.likes_count || 0,
+            commentsCount: row.comments_count || 0,
             createdAt: row.created_at,
             updatedAt: row.updated_at
         };

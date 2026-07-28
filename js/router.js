@@ -19,6 +19,7 @@ const Router = {
             'cari-orang': CariOrangPage,
             'posting-baru': PostingBaruPage,
             'ai-search': AISearchPage,
+            'ai-chat': AIChatPage,
             'ai-recommendation': AIRecommendationPage,
             'posting-saya': PostingSayaPage,
             'favorit': FavoritPage,

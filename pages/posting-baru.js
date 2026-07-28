@@ -163,7 +163,20 @@ const PostingBaruPage = {
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Deskripsi *</label>
-                                <textarea name="description" class="form-input" rows="3" placeholder="Deskripsi orang yang dicari. Contoh: Terakhir bertemu di Bandung sekitar tahun 2015. Lulusan SMA Negeri 3." required></textarea>
+                                <textarea id="post-description" name="description" class="form-input" rows="3" placeholder="Deskripsi orang yang dicari. Contoh: Terakhir bertemu di Bandung sekitar tahun 2015. Lulusan SMA Negeri 3." required oninput="PostingBaruPage.checkEmergency(this.value)"></textarea>
+                                <div class="flex items-center gap-2 mt-2">
+                                    <button type="button" onclick="PostingBaruPage.aiAutoFill()" class="text-xs px-3 py-1.5 bg-accent-100 dark:bg-accent-900/30 text-accent-700 dark:text-accent-300 rounded-lg hover:bg-accent-200 dark:hover:bg-accent-900/50 transition flex items-center gap-1">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                                        AI Auto Fill
+                                    </button>
+                                    <span id="auto-fill-status" class="text-xs text-gray-400"></span>
+                                </div>
+                                <div id="emergency-indicator" class="hidden mt-2 p-2 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+                                    <p class="text-xs text-red-600 dark:text-red-400 font-medium flex items-center gap-1">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+                                        Kasus darurat terdeteksi - akan diprioritaskan
+                                    </p>
+                                </div>
                             </div>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
@@ -267,6 +280,56 @@ const PostingBaruPage = {
     removePhoto(index) {
         this.photoFiles.splice(index, 1);
         this.renderPhotoPreviews();
+    },
+
+    checkEmergency(text) {
+        const indicator = document.getElementById('emergency-indicator');
+        if (!indicator) return;
+        if (AISkills.isEmergency(text)) {
+            indicator.classList.remove('hidden');
+        } else {
+            indicator.classList.add('hidden');
+        }
+    },
+
+    async aiAutoFill() {
+        const desc = document.getElementById('post-description')?.value?.trim();
+        if (!desc) { Toast.show('Masukkan deskripsi terlebih dahulu', 'warning'); return; }
+
+        const status = document.getElementById('auto-fill-status');
+        if (status) status.textContent = 'AI menganalisis...';
+
+        try {
+            const data = await AISkills.extractPostData(desc);
+            if (!data) { if (status) status.textContent = 'Gagal menganalisis'; return; }
+
+            const form = document.getElementById('post-form');
+            if (!form) return;
+
+            const fillField = (name, value) => {
+                if (value) {
+                    const field = form.querySelector(`[name="${name}"]`);
+                    if (field && !field.value) { field.value = value; field.classList.add('ring-2', 'ring-accent-400'); setTimeout(() => field.classList.remove('ring-2', 'ring-accent-400'), 2000); }
+                }
+            };
+
+            fillField('fullName', data.fullName);
+            fillField('nickname', data.nickname);
+            fillField('city', data.city);
+            fillField('province', data.province);
+            fillField('school', data.school);
+            fillField('university', data.university);
+            fillField('workplace', data.workplace);
+            fillField('relation', data.relation);
+            fillField('physicalFeatures', data.physicalFeatures);
+            fillField('hobby', data.hobby);
+
+            if (status) status.textContent = `Selesai! Keyakinan: ${data.confidence || 0}%`;
+            Toast.show('AI Auto Fill berhasil!', 'success');
+        } catch (err) {
+            console.error('Auto fill error:', err);
+            if (status) status.textContent = 'Gagal';
+        }
     },
 
     async forceSubmit() {

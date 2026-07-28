@@ -124,6 +124,83 @@ Hanya return JSON.`;
         }
     },
 
+    // AI External Knowledge Search - Search for information about a person from various sources
+    async searchExternalKnowledge(query) {
+        if (!this.available || !query.trim()) return null;
+
+        const prompt = `Anda adalah AI pencari orang untuk platform RECONNECT. Seseorang mencari: "${query}"
+
+Gunakan pengetahuan Anda untuk memberikan informasi yang relevan dari berbagai sumber:
+
+1. **Informasi Umum Nama**: Jika nama tersebut umum di Indonesia, jelaskan asal-usul, arti, dan variasi nama tersebut
+2. **Konteks Lokasi**: Jika disebutkan kota/daerah, berikan informasi tentang lokasi tersebut (populasi, karakteristik, komunitas)
+3. **Tips Pencarian Spesifik**: Berdasarkan informasi yang diberikan, berikan strategi pencarian yang efektif
+4. **Sumber Daya**: Sarankan sumber daya online/offline yang bisa membantu (komunitas Facebook, grup WhatsApp, forum, organisasi pencari orang, kantor kelurahan, RT/RW)
+5. **Kemungkinan Pola**: Jika ada petunjuk tentang tahun/sekolah/hubungan, analisis kemungkinan pola pencarian
+
+Format dalam HTML (tanpa script/style). Gunakan tag: <div>, <p>, <strong>, <em>, <ul>, <li>, <h4>, <span>.
+Buat dalam Bahasa Indonesia. Informatif dan praktis. Maksimal 400 kata.`;
+
+        const result = await this.callGemini(prompt, 2048);
+        if (result) {
+            return result.replace(/```html\n?/g, '').replace(/```\n?/g, '').trim();
+        }
+        return null;
+    },
+
+    // AI Cross-Reference Search - Search across multiple dimensions
+    async searchCrossReference(query, localPosts) {
+        if (!this.available || !query.trim()) return [];
+
+        const localContext = localPosts.length > 0
+            ? `\nData di database lokal (${localPosts.length} posting):\n${localPosts.slice(0, 10).map((p, i) => `[${i+1}] ${p.fullName || ''} | ${p.city || ''} | ${p.description || ''}`).join('\n')}`
+            : '\nTidak ada data di database lokal.';
+
+        const prompt = `Analisis pencarian orang: "${query}"
+${localContext}
+
+Berdasarkan pengetahuan umum Anda, buat "kemungkinan hasil pencarian" dari berbagai sumber informasi.
+Jika nama adalah nama umum Indonesia, sebutkan variasi nama yang mungkin.
+Jika ada lokasi, sebutkan konteks lokasi tersebut.
+Jika ada tahun/sekolah, analisis kemungkinan.
+
+Kembalikan JSON array hasil analisis (maksimal 5):
+[{
+    "fullName": "nama yang mungkin dicari",
+    "city": "kota terkait jika ada",
+    "description": "informasi dari pengetahuan umum",
+    "source": "sumber informasi (contoh: 'Pengetahuan Umum AI', 'Analisis Nama', 'Konteks Lokasi')",
+    "confidence": 0-100,
+    "reason": "alasan mengapa ini relevan"
+}]
+
+Jika tidak ada yang relevan, return array kosong [].
+Hanya return JSON.`;
+
+        try {
+            const result = await this.callGemini(prompt, 2048);
+            if (!result) return [];
+            const parsed = this._jsonExtract(result);
+            if (!Array.isArray(parsed)) return [];
+
+            return parsed.map(item => ({
+                id: 'ai-external-' + Math.random().toString(36).substr(2, 9),
+                fullName: item.fullName || '',
+                city: item.city || '',
+                description: item.description || '',
+                source: item.source || 'AI Knowledge',
+                aiScore: item.confidence || 50,
+                aiReason: item.reason || '',
+                isExternal: true,
+                photoURL: null,
+                created_at: new Date().toISOString()
+            }));
+        } catch (e) {
+            console.error('Cross-reference search error:', e);
+            return [];
+        }
+    },
+
     // AI Matching Score
     async getMatchScore(personData, targetData) {
         const prompt = `Bandingkan dua data orang berikut dan berikan skor kecocokan:

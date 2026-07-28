@@ -123,6 +123,9 @@ const AISearchPage = {
                 <!-- AI Insight -->
                 <div id="ai-insight-container" class="hidden"></div>
 
+                <!-- External AI Knowledge Results -->
+                <div id="external-results" class="hidden space-y-4"></div>
+
                 <!-- Empty State -->
                 <div id="ai-empty" class="text-center py-12">
                     <svg class="w-20 h-20 mx-auto text-gray-200 dark:text-gray-700 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
@@ -186,6 +189,102 @@ const AISearchPage = {
     quickSearch(query) {
         const input = document.getElementById('ai-search-input');
         if (input) { input.value = query; this.performSearch(query); }
+    },
+
+    async loadExternalKnowledge(query, localPosts) {
+        const externalEl = document.getElementById('external-results');
+        if (!externalEl) return;
+        externalEl.innerHTML = `
+            <div class="card p-5 border-dashed border-2 border-accent-200 dark:border-accent-800/50">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-8 h-8 bg-accent-100 dark:bg-accent-900/30 rounded-lg flex items-center justify-center">
+                        <div class="w-4 h-4 border-2 border-accent-400 border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-gray-900 dark:text-white text-sm">AI Knowledge Search</h4>
+                        <p class="text-xs text-gray-400">Mencari informasi dari berbagai sumber...</p>
+                    </div>
+                </div>
+            </div>`;
+        externalEl.classList.remove('hidden');
+
+        try {
+            const [externalPosts, knowledgeHtml] = await Promise.all([
+                AIEngine.searchCrossReference(query, localPosts),
+                AIEngine.searchExternalKnowledge(query)
+            ]);
+
+            let html = '';
+
+            // External knowledge results from AI
+            if (externalPosts && externalPosts.length > 0) {
+                html += `
+                    <div class="card p-5 border border-accent-100 dark:border-accent-800/30">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 bg-gradient-to-br from-accent-400 to-accent-600 rounded-xl flex items-center justify-center">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-gray-900 dark:text-white">Hasil dari Pengetahuan AI</h3>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Informasi dari berbagai sumber pengetahuan</p>
+                            </div>
+                        </div>
+                        <div class="space-y-3">
+                            ${externalPosts.map(post => `
+                                <div class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl border border-gray-100 dark:border-gray-700">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <div class="flex-1">
+                                            <div class="flex items-center gap-2">
+                                                <h4 class="font-semibold text-gray-900 dark:text-white">${escapeHtml(post.fullName || 'Tidak diketahui')}</h4>
+                                                ${post.city ? `<span class="badge badge-info text-[10px]">${escapeHtml(post.city)}</span>` : ''}
+                                                <span class="text-[10px] px-2 py-0.5 bg-accent-100 dark:bg-accent-900/30 text-accent-700 dark:text-accent-300 rounded-full">${escapeHtml(post.source || 'AI')}</span>
+                                            </div>
+                                            <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">${escapeHtml(post.description || '')}</p>
+                                            ${post.aiReason ? `<p class="text-xs text-accent-600 dark:text-accent-400 mt-2 italic">💡 ${escapeHtml(post.aiReason)}</p>` : ''}
+                                        </div>
+                                        <div class="text-right flex-shrink-0">
+                                            <div class="text-lg font-bold text-accent-500">${post.aiScore}%</div>
+                                            <div class="text-[10px] text-gray-400">confidence</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>`;
+            }
+
+            // External knowledge HTML
+            if (knowledgeHtml) {
+                html += `
+                    <div class="card p-5 bg-gradient-to-br from-blue-50/50 to-purple-50/50 dark:from-blue-900/10 dark:to-purple-900/10 border border-blue-100 dark:border-blue-800/30">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-gray-900 dark:text-white">Informasi dari Berbagai Sumber</h3>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Analisis AI berdasarkan pengetahuan umum</p>
+                            </div>
+                        </div>
+                        <div class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">${knowledgeHtml}</div>
+                    </div>`;
+            }
+
+            if (html) {
+                externalEl.innerHTML = html;
+            } else {
+                externalEl.innerHTML = `
+                    <div class="card p-4 text-center">
+                        <p class="text-sm text-gray-400">Tidak ada informasi tambahan ditemukan dari sumber eksternal</p>
+                    </div>`;
+            }
+        } catch (err) {
+            console.error('External search error:', err);
+            externalEl.innerHTML = `
+                <div class="card p-4 text-center">
+                    <p class="text-sm text-gray-400">Gagal memuat informasi dari sumber eksternal</p>
+                </div>`;
+        }
     },
 
     async performSearch(query) {
@@ -263,7 +362,10 @@ const AISearchPage = {
             this.currentResults = localResults;
             this.renderResults(localResults);
 
-            // AI Insight for empty results
+            // External AI Knowledge Search (parallel)
+            this.loadExternalKnowledge(query, posts);
+
+            // AI Insight
             if (localResults.length === 0) {
                 const insight = await AISkills.getSearchInsight(query, posts);
                 if (insight && insightContainer) {
@@ -283,6 +385,7 @@ const AISearchPage = {
                     insightContainer.classList.remove('hidden');
                 }
             } else if (insightContainer) {
+                insightContainer.innerHTML = '';
                 insightContainer.classList.add('hidden');
             }
 

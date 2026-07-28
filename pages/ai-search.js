@@ -122,6 +122,10 @@ const AISearchPage = {
 
             this.currentResults = searchResults;
             this.renderResults(searchResults);
+
+            if (searchResults.length === 0) {
+                this.renderAIInsight(query);
+            }
         } catch (err) {
             console.error('AI Search error:', err);
             Toast.show('Gagal melakukan pencarian AI', 'error');
@@ -200,6 +204,54 @@ const AISearchPage = {
         document.getElementById('ai-results')?.classList.add('hidden');
         document.getElementById('ai-empty')?.classList.remove('hidden');
         document.getElementById('ai-loading')?.classList.add('hidden');
+    },
+
+    async renderAIInsight(query) {
+        const list = document.getElementById('results-list');
+        if (!list) return;
+
+        list.innerHTML = `
+            <div class="bg-gradient-to-r from-accent-50 to-primary-50 dark:from-accent-900/20 dark:to-primary-900/20 rounded-2xl p-6 border border-accent-100 dark:border-accent-800/30">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 bg-accent-500 rounded-xl flex items-center justify-center">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-gray-900 dark:text-white">AI Insight</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Analisis untuk "${escapeHtml(query)}"</p>
+                    </div>
+                    <div class="ml-auto">
+                        <div class="inline-block w-5 h-5 border-2 border-accent-400 border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                </div>
+                <div id="ai-insight-content" class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+                    <p class="text-gray-400">AI sedang menganalisis...</p>
+                </div>
+            </div>`;
+
+        try {
+            const insight = await AIEngine.analyzeSearchQuery(query);
+            const contentEl = document.getElementById('ai-insight-content');
+            if (contentEl && insight) {
+                contentEl.innerHTML = insight;
+            } else if (contentEl) {
+                contentEl.innerHTML = `
+                    <p class="mb-2">Tidak ditemukan hasil di database untuk "<strong>${escapeHtml(query)}</strong>".</p>
+                    <p class="text-xs text-gray-400 mt-3">Tips:</p>
+                    <ul class="text-xs text-gray-400 mt-1 space-y-1 list-disc list-inside">
+                        <li>Coba dengan nama lengkap atau nama panggilan</li>
+                        <li>Tambahkan lokasi atau kota asal</li>
+                        <li>Gunakan ejaan yang berbeda (misal: "Budi" atau "Budy")</li>
+                        <li>Masukkan nama sekolah atau tempat kerja</li>
+                    </ul>`;
+            }
+        } catch (err) {
+            console.error('AI Insight error:', err);
+            const contentEl = document.getElementById('ai-insight-content');
+            if (contentEl) {
+                contentEl.innerHTML = `<p class="text-gray-400">Gagal menganalisis. Silakan coba kata kunci lain.</p>`;
+            }
+        }
     },
 
     currentResults: []

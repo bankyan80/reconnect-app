@@ -204,6 +204,29 @@ Hanya return JSON.`;
         return { decision: 'review', reason: 'AI evaluation failed' };
     },
 
+    // AI Search Insight - Analisis query pencarian
+    async analyzeSearchQuery(query) {
+        const prompt = `Anda adalah asisten AI untuk platform RECONNECT yang membantu menemukan orang hilang/terpisah.
+
+Seseorang mencari: "${query}"
+
+Berikan analisis yang informatif dan membantu dalam format HTML (tanpa <script>, <style>, atau tag berbahaya lainnya). Sertakan:
+
+1. Kemungkinan identitas/orang yang dicari berdasarkan nama/informasi
+2. Tips spesifik untuk menemukan orang tersebut
+3. Strategi pencarian yang efektif
+4. Platform atau komunitas yang bisa membantu
+
+Gunakan HTML sederhana: <p>, <strong>, <em>, <ul>, <li>, <br>.
+Buat dalam Bahasa Indonesia, ramah, dan informatif. Maksimal 300 kata.`;
+
+        const result = await this.callGemini(prompt, 1024);
+        if (result) {
+            return result.replace(/```html\n?/g, '').replace(/```\n?/g, '').trim();
+        }
+        return null;
+    },
+
     // AI Auto Complete
     async autoComplete(partialName) {
         if (!partialName || partialName.length < 2) return [];

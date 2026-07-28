@@ -130,16 +130,24 @@ Hanya return JSON.`;
 
         const prompt = `Anda adalah AI pencari orang untuk platform RECONNECT. Seseorang mencari: "${query}"
 
-Gunakan pengetahuan Anda untuk memberikan informasi yang relevan dari berbagai sumber:
+Tugas Anda adalah mencari informasi terbaru dan relevan dari berbagai sumber:
 
-1. **Informasi Umum Nama**: Jika nama tersebut umum di Indonesia, jelaskan asal-usul, arti, dan variasi nama tersebut
-2. **Konteks Lokasi**: Jika disebutkan kota/daerah, berikan informasi tentang lokasi tersebut (populasi, karakteristik, komunitas)
-3. **Tips Pencarian Spesifik**: Berdasarkan informasi yang diberikan, berikan strategi pencarian yang efektif
-4. **Sumber Daya**: Sarankan sumber daya online/offline yang bisa membantu (komunitas Facebook, grup WhatsApp, forum, organisasi pencari orang, kantor kelurahan, RT/RW)
-5. **Kemungkinan Pola**: Jika ada petunjuk tentang tahun/sekolah/hubungan, analisis kemungkinan pola pencarian
+1. **Informasi Terbaru**: Cari berita, informasi terkini tentang orang/tempat yang dicari. Jika ada berita baru tentang orang hilang atau ditemukan di wilayah terkait, sertakan.
+2. **Informasi Umum Nama**: Jika nama tersebut umum di Indonesia, jelaskan asal-usul, arti, variasi nama, dan demografi pemakai nama tersebut
+3. **Konteks Lokasi**: Jika disebutkan kota/daerah, berikan informasi terkini tentang lokasi tersebut
+4. **Tips Pencarian Spesifik**: Strategi pencarian yang efektif berdasarkan informasi yang tersedia
+5. **Sumber Daya Terbaru**: Sarankan sumber daya terkini yang bisa membantu:
+   - Komunitas Facebook aktif tentang pencarian orang
+   - Grup WhatsApp yang relevan
+   - Forum online dan media sosial
+   - Organisasi pencari orang (Yayasan, NGO)
+   - Kantor kelurahan, RT/RW, kecamatan
+   - Media sosial dan platform digital
+6. **Kemungkinan Pola**: Analisis pola berdasarkan tahun/sekolah/hubungan
+7. **Berita dan Kabar Terkini**: Jika ada informasi terbaru tentang pencarian orang di wilayah tersebut, sertakan
 
 Format dalam HTML (tanpa script/style). Gunakan tag: <div>, <p>, <strong>, <em>, <ul>, <li>, <h4>, <span>.
-Buat dalam Bahasa Indonesia. Informatif dan praktis. Maksimal 400 kata.`;
+Buat dalam Bahasa Indonesia. Informatif, praktis, dan terkini. Maksimal 500 kata.`;
 
         const result = await this.callGemini(prompt, 2048);
         if (result) {
@@ -148,7 +156,7 @@ Buat dalam Bahasa Indonesia. Informatif dan praktis. Maksimal 400 kata.`;
         return null;
     },
 
-    // AI Cross-Reference Search - Search across multiple dimensions
+    // AI Cross-Reference Search - Search across multiple dimensions with latest info
     async searchCrossReference(query, localPosts) {
         if (!this.available || !query.trim()) return [];
 
@@ -159,19 +167,25 @@ Buat dalam Bahasa Indonesia. Informatif dan praktis. Maksimal 400 kata.`;
         const prompt = `Analisis pencarian orang: "${query}"
 ${localContext}
 
-Berdasarkan pengetahuan umum Anda, buat "kemungkinan hasil pencarian" dari berbagai sumber informasi.
-Jika nama adalah nama umum Indonesia, sebutkan variasi nama yang mungkin.
-Jika ada lokasi, sebutkan konteks lokasi tersebut.
-Jika ada tahun/sekolah, analisis kemungkinan.
+Tugas Anda:
+1. Analisis nama dan variasinya
+2. Cari informasi terkini yang relevan dari pengetahuan umum
+3. Jika ada konteks lokasi/tahun/sekolah, berikan informasi terbaru
+4. Buat posting potensial dari informasi yang ditemukan
 
 Kembalikan JSON array hasil analisis (maksimal 5):
 [{
     "fullName": "nama yang mungkin dicari",
     "city": "kota terkait jika ada",
-    "description": "informasi dari pengetahuan umum",
-    "source": "sumber informasi (contoh: 'Pengetahuan Umum AI', 'Analisis Nama', 'Konteks Lokasi')",
+    "province": "provinsi jika ada",
+    "school": "sekolah jika ada",
+    "description": "informasi terbaru dari pengetahuan umum dan sumber data",
+    "relation": "hubungan jika ada",
+    "physicalFeatures": "ciri fisik jika ada",
+    "source": "sumber informasi (contoh: 'Berita Terkini', 'Pengetahuan Umum AI', 'Analisis Nama', 'Konteks Lokasi', 'Data Komunitas')",
     "confidence": 0-100,
-    "reason": "alasan mengapa ini relevan"
+    "reason": "alasan mengapa ini relevan dengan pencarian",
+    "latestInfo": "informasi terbaru yang ditemukan"
 }]
 
 Jika tidak ada yang relevan, return array kosong [].
@@ -187,7 +201,11 @@ Hanya return JSON.`;
                 id: 'ai-external-' + Math.random().toString(36).substr(2, 9),
                 fullName: item.fullName || '',
                 city: item.city || '',
-                description: item.description || '',
+                province: item.province || '',
+                school: item.school || '',
+                description: item.latestInfo || item.description || '',
+                relation: item.relation || '',
+                physicalFeatures: item.physicalFeatures || '',
                 source: item.source || 'AI Knowledge',
                 aiScore: item.confidence || 50,
                 aiReason: item.reason || '',

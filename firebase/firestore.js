@@ -56,6 +56,51 @@ const DB = {
         return result;
     },
 
+    // Create post from AI external search results
+    async createAIPost(aiData) {
+        try {
+            // Check if similar AI post already exists
+            const { data: existing } = await supabase.from('posts')
+                .select('id')
+                .eq('full_name', aiData.fullName)
+                .eq('source', 'ai_generated')
+                .limit(1);
+
+            if (existing && existing.length > 0) return null;
+
+            const post = {
+                author_id: 'ai-system',
+                author_name: 'RECONNECT AI',
+                full_name: aiData.fullName,
+                nickname: aiData.nickname || null,
+                city: aiData.city || null,
+                province: aiData.province || null,
+                country: aiData.country || 'Indonesia',
+                school: aiData.school || null,
+                description: aiData.description,
+                relation: aiData.relation || null,
+                physical_features: aiData.physicalFeatures || null,
+                photo_url: aiData.photoURL || null,
+                reporter_name: 'RECONNECT AI',
+                reporter_relation: 'AI Generated',
+                reporter_phone: '',
+                status: 'approved',
+                source: 'ai_generated',
+                ai_score: aiData.confidence || 0,
+                ai_analysis: aiData.reason || null,
+                views: 0,
+                favorites: 0
+            };
+
+            const { data: result, error } = await supabase.from('posts').insert(post).select().single();
+            if (error) { console.error('Create AI post error:', error); return null; }
+            return result;
+        } catch (e) {
+            console.error('Create AI post error:', e);
+            return null;
+        }
+    },
+
     async updatePost(postId, data) {
         const mapped = {};
         if (data.status !== undefined) mapped.status = data.status;
@@ -448,6 +493,7 @@ const DB = {
             status: row.status,
             aiScore: row.ai_score,
             aiAnalysis: row.ai_analysis,
+            source: row.source || null,
             views: row.views,
             favorites: row.favorites,
             likesCount: row.likes_count || 0,

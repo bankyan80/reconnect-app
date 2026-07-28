@@ -214,7 +214,42 @@ const AISearchPage = {
                 AIEngine.searchExternalKnowledge(query)
             ]);
 
+            // Auto-save external AI results as posts
+            let savedCount = 0;
+            if (externalPosts && externalPosts.length > 0) {
+                for (const post of externalPosts) {
+                    if (post.aiScore >= 40) {
+                        const saved = await DB.createAIPost({
+                            fullName: post.fullName,
+                            nickname: null,
+                            city: post.city || null,
+                            province: post.province || null,
+                            country: 'Indonesia',
+                            school: post.school || null,
+                            description: `${post.description}\n\nSumber: ${post.source}`,
+                            relation: post.relation || null,
+                            physicalFeatures: post.physicalFeatures || null,
+                            photoURL: null,
+                            confidence: post.aiScore,
+                            reason: post.aiReason
+                        });
+                        if (saved) savedCount++;
+                    }
+                }
+            }
+
             let html = '';
+
+            // Saved posts notification
+            if (savedCount > 0) {
+                html += `
+                    <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/30 rounded-xl p-3 mb-4">
+                        <div class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            <span class="text-sm text-green-700 dark:text-green-300 font-medium">${savedCount} informasi baru berhasil disimpan ke database</span>
+                        </div>
+                    </div>`;
+            }
 
             // External knowledge results from AI
             if (externalPosts && externalPosts.length > 0) {

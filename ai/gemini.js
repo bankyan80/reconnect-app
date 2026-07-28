@@ -164,31 +164,32 @@ Buat dalam Bahasa Indonesia. Informatif, praktis, dan terkini. Maksimal 500 kata
             ? `\nData di database lokal (${localPosts.length} posting):\n${localPosts.slice(0, 10).map((p, i) => `[${i+1}] ${p.fullName || ''} | ${p.city || ''} | ${p.description || ''}`).join('\n')}`
             : '\nTidak ada data di database lokal.';
 
-        const prompt = `Analisis pencarian orang: "${query}"
+        const prompt = `Seseorang mencari: "${query}"
 ${localContext}
 
-Tugas Anda:
-1. Analisis nama dan variasinya
-2. Cari informasi terkini yang relevan dari pengetahuan umum
-3. Jika ada konteks lokasi/tahun/sekolah, berikan informasi terbaru
-4. Buat posting potensial dari informasi yang ditemukan
+Tugas Anda: Cari informasi tentang orang yang DICARI, BUKAN nama lain.
 
-Kembalikan JSON array hasil analisis (maksimal 5):
+1. Variasi nama: Jika yang dicari "Andi", sebutkan variasi: Andy, Andi, Andika, Handi, dll. JANGAN nama lain seperti Budi, Rudi, dll.
+2. Konteks lokasi: Jika ada kota, berikan info terkini tentang kota tersebut
+3. Tips spesifik: Strategi pencarian untuk nama tersebut di lokasi tersebut
+4. Sumber daya: Komunitas, organisasi, media sosial yang relevan
+5. Berita terkini: Jika ada berita tentang pencarian orang di wilayah tersebut
+
+Kembalikan JSON array (maksimal 3) HANYA tentang orang yang dicari:
 [{
-    "fullName": "nama yang mungkin dicari",
-    "city": "kota terkait jika ada",
-    "province": "provinsi jika ada",
-    "school": "sekolah jika ada",
-    "description": "informasi terbaru dari pengetahuan umum dan sumber data",
-    "relation": "hubungan jika ada",
-    "physicalFeatures": "ciri fisik jika ada",
-    "source": "sumber informasi (contoh: 'Berita Terkini', 'Pengetahuan Umum AI', 'Analisis Nama', 'Konteks Lokasi', 'Data Komunitas')",
+    "fullName": "nama yang dicari atau variasinya",
+    "city": "kota terkait",
+    "province": "provinsi",
+    "description": "informasi terkini tentang orang/tempat tersebut",
+    "source": "sumber informasi",
     "confidence": 0-100,
-    "reason": "alasan mengapa ini relevan dengan pencarian",
-    "latestInfo": "informasi terbaru yang ditemukan"
+    "reason": "mengapa ini relevan"
 }]
 
-Jika tidak ada yang relevan, return array kosong [].
+Contoh benar: Cari "Andi Jakarta" → [{fullName: "Andi", city: "Jakarta", ...}]
+Contoh SALAH: Cari "Andi Jakarta" → [{fullName: "Budi", ...}]
+
+Jika tidak ada info relevan, return [].
 Hanya return JSON.`;
 
         try {

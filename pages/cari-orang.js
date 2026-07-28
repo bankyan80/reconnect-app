@@ -174,7 +174,7 @@ const CariOrangPage = {
         <div onclick="Router.navigate('detail-posting', {id:'${post.id}'})" class="search-result-card">
             <div class="flex items-start gap-4">
                 <div class="w-14 h-14 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-primary-600 font-bold text-xl flex-shrink-0 overflow-hidden">
-                    ${post.photoURL ? `<img src="${escapeHtml(post.photoURL)}" alt="" class="w-full h-full object-cover">` : escapeHtml((post.fullName || '?')[0]).toUpperCase()}
+                    ${post.photoURL ? `<img src="${escapeHtml(post.photoURL)}" alt="" class="w-full h-full object-cover">` : `<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary-300 to-primary-500"><span class="text-xl font-bold text-white/80">${escapeHtml((post.fullName || '?')[0]).toUpperCase()}</span></div>`}
                 </div>
                 <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2">

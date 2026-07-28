@@ -31,6 +31,7 @@ const Router = {
             'kontak': KontakPage,
             'moderasi': ModerasiPage,
             'admin': AdminPage,
+            'location': LocationSharePage,
             'login': LoginPage
         };
     },

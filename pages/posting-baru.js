@@ -77,16 +77,17 @@ const PostingBaruPage = {
                                 </div>
                             </div>
 
-                            <!-- Foto -->
+                            <!-- Foto (Wajib) -->
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Foto</label>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Foto * <span class="text-red-500 text-xs">(Wajib)</span></label>
                                 <div class="upload-zone" onclick="document.getElementById('photo-input').click()">
                                     <input type="file" id="photo-input" accept="image/*" multiple class="hidden" onchange="PostingBaruPage.handlePhotos(event)">
                                     <svg class="w-10 h-10 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                                     <p class="text-sm text-gray-500">Klik untuk upload foto</p>
-                                    <p class="text-xs text-gray-400 mt-1">JPG, PNG, WebP (maks. 5MB)</p>
+                                    <p class="text-xs text-gray-400 mt-1">JPG, PNG, WebP (maks. 5MB) - Min. 1 foto</p>
                                 </div>
                                 <div id="photo-preview" class="flex gap-2 mt-3 flex-wrap"></div>
+                                <p id="photo-error" class="hidden text-xs text-red-500 mt-1">Foto wajib diupload minimal 1</p>
                             </div>
 
                             <!-- Lokasi -->
@@ -360,6 +361,18 @@ const PostingBaruPage = {
             const formData = new FormData(form);
             const data = {};
             formData.forEach((val, key) => { if (val) data[key] = val; });
+
+            // Validate photo required
+            if (this.photoFiles.length === 0) {
+                const photoErr = document.getElementById('photo-error');
+                if (photoErr) photoErr.classList.remove('hidden');
+                Toast.show('Foto wajib diupload minimal 1', 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> Kirim Posting';
+                return;
+            }
+            const photoErr = document.getElementById('photo-error');
+            if (photoErr) photoErr.classList.add('hidden');
 
             // AI Spam Detection
             const spamCheck = await AIEngine.detectSpam(data.description || '');

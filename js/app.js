@@ -12,10 +12,16 @@ const App = {
         BottomNav.render();
         Topbar.renderUserMenu();
         this.updateNotificationBadges();
+        this.renderLangSwitcher();
 
         if (!Router.initialized) {
             Router.init();
         }
+    },
+
+    renderLangSwitcher() {
+        const container = document.getElementById('lang-switcher-container');
+        if (container) container.innerHTML = I18n.renderLanguageSwitcher();
     },
 
     initDarkMode() {

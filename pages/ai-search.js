@@ -327,7 +327,7 @@ const AISearchPage = {
         <div class="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-lg transition-all duration-300 cursor-pointer ${isEmergency ? 'ring-2 ring-red-400 dark:ring-red-600' : ''}" onclick="Router.navigate('detail-posting', {id:'${escapeHtml(post.id)}'})">
             <div class="flex items-start gap-4">
                 <div class="w-16 h-16 rounded-2xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-primary-600 font-bold text-xl flex-shrink-0 overflow-hidden">
-                    ${post.photoURL ? `<img src="${escapeHtml(post.photoURL)}" alt="" class="w-full h-full object-cover">` : escapeHtml((post.fullName || '?')[0]).toUpperCase()}
+                    ${post.photoURL ? `<img src="${escapeHtml(post.photoURL)}" alt="" class="w-full h-full object-cover">` : `<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary-300 to-primary-500"><span class="text-2xl font-bold text-white/80">${escapeHtml((post.fullName || '?')[0]).toUpperCase()}</span></div>`}
                 </div>
                 <div class="flex-1 min-w-0">
                     <div class="flex items-start justify-between gap-2">

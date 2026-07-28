@@ -99,10 +99,9 @@ const DashboardPage = {
             const postId = escapeHtml(post.id);
             return `
             <div class="card hover:shadow-lg transition-all duration-300 overflow-hidden">
-                ${post.photoURL ? `
-                <div onclick="Router.navigate('detail-posting', {id:'${postId}'})" class="h-36 bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center cursor-pointer">
-                    <img src="${escapeHtml(post.photoURL)}" alt="" class="w-full h-full object-cover">
-                </div>` : ''}
+                <div onclick="Router.navigate('detail-posting', {id:'${postId}'})" class="h-36 bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center cursor-pointer overflow-hidden">
+                    ${post.photoURL ? `<img src="${escapeHtml(post.photoURL)}" alt="" class="w-full h-full object-cover">` : `<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary-300 to-primary-500"><span class="text-4xl font-bold text-white/80">${escapeHtml((post.fullName || '?')[0]).toUpperCase()}</span></div>`}
+                </div>
                 <div class="p-4">
                     <h3 onclick="Router.navigate('detail-posting', {id:'${postId}'})" class="font-bold text-gray-900 dark:text-white text-sm cursor-pointer hover:text-primary-500 transition">${escapeHtml(post.fullName || 'Tidak diketahui')}</h3>
                     ${post.relation ? `<p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Hubungan: ${escapeHtml(post.relation)}</p>` : ''}
